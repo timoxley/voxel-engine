@@ -30,7 +30,7 @@ function Game(opts) {
   var self = this
   if (!opts) opts = {}
   if (process.browser && this.notCapable()) return
-  
+
   if (!('generateChunks' in opts)) opts.generateChunks = true
   this.generateChunks = opts.generateChunks
   this.setConfigurablePositions(opts)
@@ -41,12 +41,12 @@ function Game(opts) {
 
   this.cubeSize = 1 // backwards compat
   this.chunkSize = opts.chunkSize || 32
-  
+
   // chunkDistance and removeDistance should not be set to the same thing
   // as it causes lag when you go back and forth on a chunk boundary
   this.chunkDistance = opts.chunkDistance || 2
   this.removeDistance = opts.removeDistance || this.chunkDistance + 1
-  
+
   this.playerHeight = opts.playerHeight || 1.62
   this.meshType = opts.meshType || 'surfaceMesh'
   this.mesher = opts.mesher || voxel.meshers.greedy
@@ -62,14 +62,14 @@ function Game(opts) {
   this.view.bindToScene(this.scene)
   this.camera = this.view.getCamera()
   if (!opts.lightsDisabled) this.addLights(this.scene)
-  
+
   this.collideVoxels = collisions(
     this.getBlock.bind(this),
     1,
     [Infinity, Infinity, Infinity],
     [-Infinity, -Infinity, -Infinity]
   )
-  
+
   this.timer = this.initializeTimer((opts.tickFPS || 16))
   this.paused = false
 
@@ -89,7 +89,7 @@ function Game(opts) {
   })
 
   this.materialNames = opts.materials || [['grass', 'dirt', 'grass_dirt'], 'brick', 'dirt']
-  
+
   self.chunkRegion.on('change', function(newChunk) {
     self.removeFarChunks()
   })
@@ -100,10 +100,10 @@ function Game(opts) {
 
   // client side only after this point
   if (!process.browser) return
-  
+
   this.paused = true
   this.initializeRendering()
-  
+
   for (var chunkIndex in this.voxels.chunks) this.showChunk(this.voxels.chunks[chunkIndex])
 
   this.initializeControls(opts)
@@ -136,19 +136,19 @@ Game.prototype.addItem = function(item) {
       this.potentialCollisionSet(),
       [item.size, item.size, item.size]
     )
-    
+
     if (item.velocity) {
       newItem.velocity.copy(item.velocity)
       newItem.subjectTo(this.gravity)
     }
-    
+
     newItem.repr = function() { return 'debris' }
     newItem.mesh = item.mesh
     newItem.blocksCreation = item.blocksCreation
-    
+
     item = newItem
   }
-  
+
   this.items.push(item)
   if (item.mesh) this.scene.add(item.mesh)
 }
@@ -164,7 +164,7 @@ Game.prototype.removeItem = function(item) {
 Game.prototype.raycast = // backwards compat
 Game.prototype.raycastVoxels = function(start, direction, maxDistance) {
   if (!start) return this.raycastVoxels(this.cameraPosition(), this.cameraVector(), 10)
-  
+
   var hitNormal = [0, 0, 0]
   var hitPosition = [0, 0, 0]
   var cp = start || this.cameraPosition()
@@ -173,7 +173,7 @@ Game.prototype.raycastVoxels = function(start, direction, maxDistance) {
   if (hitBlock <= 0) return false
   var adjacentPosition = [0, 0, 0]
   vector.add(adjacentPosition, hitPosition, hitNormal)
-  
+
   return {
     position: hitPosition,
     direction: direction,
@@ -187,7 +187,7 @@ Game.prototype.canCreateBlock = function(pos) {
   pos = this.parseVectorArguments(arguments)
   var floored = pos.map(function(i) { return Math.floor(i) })
   var bbox = aabb(floored, [1, 1, 1])
-  
+
   for (var i = 0, len = this.items.length; i < len; ++i) {
     var item = this.items[i]
     var itemInTheWay = item.blocksCreation && item.aabb && bbox.intersects(item.aabb())
@@ -391,9 +391,9 @@ Game.prototype.removeFarChunks = function(playerPosition) {
   Object.keys(self.voxels.chunks).map(function(chunkIndex) {
     if (nearbyChunks.indexOf(chunkIndex) > -1) return
     var chunk = self.voxels.meshes[chunkIndex]
-    
+
     if (!chunk) return
-    
+
     self.scene.remove(chunk[self.meshType])
     chunk[self.meshType].geometry.dispose()
 
@@ -495,13 +495,13 @@ Game.prototype.tick = function(delta) {
   for(var i = 0, len = this.items.length; i < len; ++i) {
     this.items[i].tick(delta)
   }
-  
+
   if (this.materials) this.materials.tick()
-  
+
   if (Object.keys(this.chunksNeedsUpdate).length > 0) this.updateDirtyChunks()
-  
+
   this.emit('tick', delta)
-  
+
   if (!this.controls) return
   var playerPos = this.playerPosition()
   this.spatial.emit('position', playerPos, playerPos)
@@ -518,11 +518,11 @@ Game.prototype.initializeTimer = function(rate) {
   var last = null
   var dt = 0
   var wholeTick
-  
+
   self.frameUpdated = true
   self.interval = setInterval(timer, 0)
   return self.interval
-  
+
   function timer() {
     if (self.paused) {
       last = Date.now()
@@ -536,12 +536,12 @@ Game.prototype.initializeTimer = function(rate) {
     if (accum < rate) return
     wholeTick = ((accum / rate)|0)
     if (wholeTick <= 0) return
-    
+
     wholeTick *= rate
-    
+
     self.tick(wholeTick)
     accum -= wholeTick
-    
+
     self.frameUpdated = true
   }
 }
